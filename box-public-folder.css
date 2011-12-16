@@ -1,0 +1,36 @@
+#box-public-folder-file-list {
+	margin:0;
+	padding:0;
+	border:1px solid #e7e7e7;
+	border-bottom: none;
+}
+
+#box-public-folder-file-list li {
+	border-bottom: 1px solid #E7E7E7;
+	list-style-type:none;
+}
+
+#box-public-folder a {
+	display: inline-block;
+	padding: 3px 6px;
+	overflow: hidden;
+	width: 520px;
+	white-space: nowrap;
+}
+
+#box-public-folder a:hover {
+	background: #ffff9f;
+	color: #000;
+}
+
+#box-public-folder .pubDate {
+	display:inline-block;
+	font-size:12px;
+	overflow:hidden;
+	text-align:right;
+	white-space:nowrap;
+	width: 100px;
+}
+
+#box-public-folder
+h1.entry-title { display:block; }
