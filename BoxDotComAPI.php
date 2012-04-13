@@ -5,19 +5,18 @@ class BoxDotComAPI {
     public function __construct ($URI) {
         $this->URI = $URI;
     }
-    
+
     public function getPublicFolder( $count = 10 ) {
         $filesToGet = $count - 1;
-        $URI = $this->URI;
-        $XML = wp_remote_get ($URI);
+        $XML = wp_remote_get ($this->URI);
 
         $folderFeed = simplexml_load_string($XML['body']);
-        
-        $folderArray = json_encode($folderFeed);
-        $folderArray = json_decode($folderArray);
-        
-        $totalDocuments = 
 
+        /*
+            TODO test see if this is necessary
+        */
+        $folderArray = json_decode(json_encode($folderFeed));
+        
         $response = array(
             'title'         => (string)$folderArray->channel->title,
             'link'          => (string)$folderArray->channel->link,
@@ -25,7 +24,12 @@ class BoxDotComAPI {
             'item'          => array_slice($folderArray->channel->item, 0 , $count)
         );
 
-        $response = json_encode($response);
-        return $response;
+        /*
+            TODO test refactor
+        */
+        // $response = json_encode($response);
+        // return $response;
+
+        return json_encode($response);
     }
 }

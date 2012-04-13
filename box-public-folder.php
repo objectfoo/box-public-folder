@@ -29,63 +29,63 @@ class WPBoxPublicFolder {
         add_action ('wp_ajax_BPF_get_public_folder', array ($this, 'ajax_get_public_folder') );
 	}
 	
+	// respond to ajax request
 	function ajax_get_public_folder() {
-	    check_ajax_referer (self::NONCE_SEED);
-        
+        check_ajax_referer (self::NONCE_SEED);
         $opts = $this->get_options();
-        // echo $opts[self::KEY_COUNT];
-        
-	    include 'BoxDotComAPI.php';
+        include 'BoxDotComAPI.php';
+        $boxAPI = new BoxDotComAPI ($opts[self::KEY_URI]); // options
 
-	    $boxAPI = new BoxDotComAPI ($opts[self::KEY_URI]); // options
-	    header( "Content-Type: application/json" );
+        header( "Content-Type: application/json" );
         echo $boxAPI->getPublicFolder ($opts[self::KEY_COUNT]);
-
 	    die();
 	}
 	
+	// activate plugin
 	function activate() {
         $this->get_options();
 	}
 	
+	// register script and style requirements
 	function register_assets() {
 	    wp_register_script (
 	        'BPF_scripts',                                      // script alias
-	        plugins_url ('js/box-public-folder.js', __FILE__),  // path
+	        plugins_url ('box-public-folder.js', __FILE__),     // path
 	        array ('jquery'),                                   // dependancies
 	        '1.0',                                              // version
 	        true );                                             // load in footer?
-
             $nonce = wp_create_nonce (self::NONCE_SEED);
             $protocol = isset ($_SERVER["HTTPS"]) ? 'https://' : 'http://';
             $params = array(
                 'ajaxurl'       => admin_url ('admin-ajax.php', $protocol),
                 'action'        => 'BPF_get_public_folder',
-                '_ajax_nonce'   => $nonce
-            );
-
+                '_ajax_nonce'   => $nonce );
             wp_localize_script ('BPF_scripts', 'BPF_params', $params);
-
             wp_register_style(
                 'BPF_styles', 
                 plugins_url( 'box-public-folder.css', __FILE__ ),
                 array(),
                 '1.0',
                 'all' );
-
 	}
-
+    
+    // handle the shortcode
     function shortcode($atts) {
         wp_enqueue_script ('BPF_scripts');
         wp_enqueue_style ('BPF_styles');
-        
 
         $html = array();
         $html[]= '<div id="box-public-folder">';
+        $html[]= sprintf(
+            '<img id="box-loading-gif" style="display:block; margin: 1em auto;" src="%s">',
+            plugins_url('img/loading.gif', __FILE__) );
         $html[]= '</div>';
+
         return implode("\n", $html);
     }
 
+    
+    // get options from wp
 	function get_options() {
 	    $defaults = array (
 	        self::KEY_COUNT   => self::DEFAULT_COUNT,
@@ -140,9 +140,10 @@ class WPBoxPublicFolder {
             array ($this, 'count_field'),
             __FILE__,
             'main' );
+
         add_settings_field (
             self::KEY_URI,
-            'URI to box.com public folder',
+            'box.com public folder RSS Feed URI',
             array ($this, 'uri_field'),
             __FILE__,
             'main' );
@@ -152,7 +153,7 @@ class WPBoxPublicFolder {
     }
     
     function section_text() {
-        echo '<p>Shortcode Settings</p>';
+        echo '';
     }
     
     function count_field() {
@@ -176,5 +177,5 @@ class WPBoxPublicFolder {
 
 $wp_bpf = new WPBoxPublicFolder;
 if (isset ($wp_bpf) ) {
-	register_activation_hook (__FILE__, array ($wp_bpf, 'activate') );
+    register_activation_hook (__FILE__, array ($wp_bpf, 'activate'));
 }

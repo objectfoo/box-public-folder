@@ -1,17 +1,30 @@
-#box-public-folder-file-list {
+#box-public-folder {
+    margin: 1em 0;
+}
+
+#box-public-folder ul {
+    border: 1px solid #e7e7e7;
+}
+
+#box-public-folder #box-public-folder-file-list {
 	margin:0;
 	padding:0;
-	border:1px solid #e7e7e7;
+/*  border:1px solid #e7e7e7;*/
 	border-bottom: none;
 }
 
-#box-public-folder-file-list li {
+#box-public-folder #box-public-folder-file-list li {
 	border-bottom: 1px solid #E7E7E7;
 	list-style-type:none;
 }
 
+#box-public-folder #box-public-folder-file-list li:last-child {
+    border: none;
+}
+
 #box-public-folder a {
 	display: inline-block;
+	text-decoration: none;
 	padding: 3px 6px;
 	overflow: hidden;
 	width: 520px;
@@ -19,8 +32,16 @@
 }
 
 #box-public-folder a:hover {
-	background: #ffff9f;
+    text-decoration: underline;
 	color: #000;
+}
+
+#box-public-folder .chrome {
+    background: #f5f5f5;
+}
+#box-public-folder a.feed-link {
+    width: 100%;
+    padding:3px 6px;
 }
 
 #box-public-folder .pubDate {
@@ -32,5 +53,5 @@
 	width: 100px;
 }
 
-#box-public-folder
-h1.entry-title { display:block; }
+#box-public-folder h1.entry-title { display:block; }
+
