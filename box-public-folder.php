@@ -2,8 +2,8 @@
 /*
 Plugin Name: Box Public Folder
 URI: http://nwempire.com
-Description: Plugin to show the last X changes to a shared box.com shared folder, ordered by modification date (via RSS 2.0)
-Version: 0.2.0
+Description: Plugin to show the last X changes to a public box.com folder, ordered by modification date via RSS
+Version: 0.3.0
 Author: SatakeST
 Author URL: http://objectfoo.com
 License: GPLv2
@@ -48,19 +48,23 @@ class WPBoxPublicFolder {
 	
 	// register script and style requirements
 	function register_assets() {
+
 	    wp_register_script (
 	        'BPF_scripts',                                      // script alias
 	        plugins_url ('box-public-folder.js', __FILE__),     // path
 	        array ('jquery'),                                   // dependancies
 	        '1.0',                                              // version
 	        true );                                             // load in footer?
+
             $nonce = wp_create_nonce (self::NONCE_SEED);
             $protocol = isset ($_SERVER["HTTPS"]) ? 'https://' : 'http://';
             $params = array(
                 'ajaxurl'       => admin_url ('admin-ajax.php', $protocol),
                 'action'        => 'BPF_get_public_folder',
                 '_ajax_nonce'   => $nonce );
+
             wp_localize_script ('BPF_scripts', 'BPF_params', $params);
+        
             wp_register_style(
                 'BPF_styles', 
                 plugins_url( 'box-public-folder.css', __FILE__ ),
@@ -73,22 +77,25 @@ class WPBoxPublicFolder {
     function shortcode($atts) {
         wp_enqueue_script ('BPF_scripts');
         wp_enqueue_style ('BPF_styles');
+        $opts = get_option( self::SETTINGS_ID );
 
         $html = array();
         $html[]= '<div id="box-public-folder">';
-        $html[]= sprintf(
-            '<img id="box-loading-gif" style="display:block; margin: 1em auto;" src="%s">',
-            plugins_url('img/loading.gif', __FILE__) );
+        $html[]= '<ul id="box-public-folder-file-list">';
+        $html[]= sprintf('<li class="chrome"><a class="feed-link" href="%s">Go To Community Folder &raquo;</a></li>',
+            $opts[self::KEY_URI]);
+        $html[]= sprintf('<li id="box-loading"><img style="display:block; margin: 1em auto;" src="%s"></li>',
+            plugins_url('img/loading.gif', __FILE__));
+        $html[]=  '</ul>';
         $html[]= '</div>';
 
         return implode("\n", $html);
     }
-
     
     // get options from wp
-	function get_options() {
-	    $defaults = array (
-	        self::KEY_COUNT   => self::DEFAULT_COUNT,
+    function get_options() {
+      $defaults = array (
+        self::KEY_COUNT   => self::DEFAULT_COUNT,
 	        self::KEY_URI     => self::DEFAULT_URI );
 	    $opts = get_option (self::SETTINGS_ID);
 	    if (!empty ($opts) ) {
@@ -149,13 +156,29 @@ class WPBoxPublicFolder {
             'main' );
 
         // register settings
-        register_setting (self::SETTINGS_ID, self::SETTINGS_ID);
+        register_setting (self::SETTINGS_ID, self::SETTINGS_ID, Array($this, 'validate'));
     }
+    
+    function validate( $opts ) {
+      $valid = array();
+      $valid[self::KEY_COUNT] = DEFAULT_COUNT;
+      $valid[self::KEY_URI] = DEFAULT_URI;
+      
+      // count
+      $opts[self::KEY_COUNT] = trim( $opts[self::KEY_COUNT]);
+      $valid[self::KEY_COUNT] = intval($opts[self::KEY_COUNT]);
+      
+      // URI
+      $opts[self::KEY_URI] = preg_replace('/\/rss\.xml$/', '', trim($opts[self::KEY_URI]));
+      $valid[self::KEY_URI] = $opts[self::KEY_URI];
+      
+      return $valid;
+    }    
     
     function section_text() {
         echo '';
     }
-    
+
     function count_field() {
 	    $opts = get_option( self::SETTINGS_ID );
 	    printf( '<input id="%1$s" name="%2$s[%1$s]" class="small-text" type="text" value="%3$s" />',
@@ -164,7 +187,7 @@ class WPBoxPublicFolder {
 	        $opts[self::KEY_COUNT] );
 	    echo '<span class="description"></span>';
     }
-    
+
     function uri_field() {
 	    $opts = get_option( self::SETTINGS_ID );
 	    printf( '<input id="%1$s" class="regular-text" name="%2$s[%1$s]" type="text" value="%3$s" />',
